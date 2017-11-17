@@ -4,6 +4,6 @@ MakeFile.Debug
 *.user
 *.o
 *.exe
-.gitignore
+*.gitignore
 debug
 release
