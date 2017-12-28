@@ -1,0 +1,14 @@
+INPUT(
+./release\tinyxml2.o
+./release\xmllogger.o
+./release\isearch.o
+./release\mission.o
+./release\map.o
+./release\dijkstra.o
+./release\config.o
+./release\astar.o
+./release\main.o
+./release\jp_search.o
+./release\theta.o
+./release\environmentoptions.o
+);
