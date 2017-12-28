@@ -7,3 +7,4 @@ MakeFile.Debug
 *.gitignore
 debug
 release
+*.txt
