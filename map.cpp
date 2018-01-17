@@ -1,5 +1,5 @@
 #include "map.h"
-
+#include <vector>
 
 Map::Map()
 {
@@ -36,6 +36,8 @@ bool Map::CellOnGrid(int i, int j) const
 {
     return (i < height && i >= 0 && j < width && j >= 0);
 }
+
+
 
 bool Map::getMap(const char *FileName)
 {
@@ -333,3 +335,16 @@ double Map::getCellSize() const
 {
       return cellSize;
 }
+
+int Map::getMapStartI() const {
+    return start_i;
+};
+int Map::getMapStartJ() const{
+    return start_j;
+};
+int Map::getMapGoalI() const {
+    return goal_i;
+};
+int Map::getMapGoalJ() const{
+    return goal_j;
+};

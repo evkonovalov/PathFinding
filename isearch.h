@@ -44,7 +44,7 @@ class ISearch
         //void makePrimaryPath(Node curNode);//Makes path using back pointers
         //void makeSecondaryPath();//Makes another type of path(sections or points)
         //Node resetParent(Node current, Node parent, const Map &map, const EnvironmentOptions &options) {return current;}//need for Theta*
-         Map                             map;
+        Map                             map;
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
         double                          hweight;//weight of h-value

@@ -12,16 +12,17 @@ ISearch::~ISearch(void) {}
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options)
 {
     (*this).map = map;
-    int r = (*this).computeHFromCellToCell(12,5,12,18,options);
-    std::cout << r << "\n";
-    /*sresult.pathfound = ;
-    sresult.nodescreated =  ;
-    sresult.numberofsteps = ;
-    sresult.time = ;
+    double r = (*this).computeHFromCellToCell(map.getMapStartI(),map.getMapStartJ(),map.getMapGoalI(),map.getMapGoalJ(),options);
+    sresult.pathfound = r;/*
+    sresult.nodescreated =  ;*/
+    sresult.numberofsteps = r;
+    /*sresult.time = ;
     sresult.hppath = &hppath; //Here is a constant pointer
     sresult.lppath = &lppath;*/
     return sresult;
 }
+
+
 
 /*std::list<Node> ISearch::findSuccessors(Node curNode, const Map &map, const EnvironmentOptions &options)
 {
