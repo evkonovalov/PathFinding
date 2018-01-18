@@ -9,7 +9,7 @@ class Astar : public ISearch
         Astar(double HW, bool BT);
     protected:
         virtual double computeHFromCellToCell(int i1, int j1, int i2, int j2, const EnvironmentOptions &options);
-        virtual std::list<Node> computePathFromCellToCell(int i1, int j1, int i2, int j2, const EnvironmentOptions &options);
+
 };
 
 #endif
