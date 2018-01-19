@@ -36,8 +36,7 @@ class ISearch
         //so think of the data structures that needed to be used, about the wrap-up classes (if needed)
         //Start with very simple (and ineffective) structures like list or vector and make it work first
         //and only then begin enhancement!
-
-        int delta(int start_i, int start_j, int fin_i, int fin_j, int metrictype);
+        virtual void search(const EnvironmentOptions &options){return;}
         bool checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners);
         long currTimeInMillSeconds();
         virtual double computeHFromCellToCell(int start_i, int start_j, int fin_i, int fin_j, const EnvironmentOptions &options) {return 0;}

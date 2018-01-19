@@ -11,8 +11,7 @@ ISearch::~ISearch(void) {}
 
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
     (*this).map = map;
-    double r = (*this).computeHFromCellToCell(map.getMapStartI(), map.getMapStartJ(), map.getMapGoalI(),
-                                              map.getMapGoalJ(), options);
+    (*this).search(options);
     return sresult;
 }
 
@@ -23,30 +22,14 @@ long ISearch::currTimeInMillSeconds() {
     return millis.count();
 }
 
-int ISearch::delta(int start_i, int start_j, int fin_i, int fin_j, int metrictype) {
-    int dx = abs(start_i - fin_i);
-    int dy = abs(start_j - fin_j);
-    if (metrictype == CN_SP_MT_DIAG) {
-        return 1;
-    } else if (metrictype == CN_SP_MT_MANH) {
-        return dx + dy;
-    } else if (metrictype == CN_SP_MT_EUCL) {
-        return 1;
-    } else {
-        if (dx > dy)
-            return dx;
-        else
-            return dy;
-    }
-}
 
 bool ISearch::checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners) {
     int dx = ni - first;
     int dy = nj - second;
-    if(dx != 0 && dy != 0){
-        if(!cutcorners && (map.CellIsObstacle(first,nj) || map.CellIsObstacle(ni,second)))
+    if (dx != 0 && dy != 0) {
+        if (!cutcorners && (map.CellIsObstacle(first, nj) || map.CellIsObstacle(ni, second)))
             return false;
-        else if (!allowsqueeze && (map.CellIsObstacle(first,nj) && map.CellIsObstacle(ni,second)))
+        else if (!allowsqueeze && (map.CellIsObstacle(first, nj) && map.CellIsObstacle(ni, second)))
             return false;
     }
     return true;
