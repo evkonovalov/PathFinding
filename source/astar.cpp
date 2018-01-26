@@ -101,8 +101,9 @@ void Astar::search(const EnvironmentOptions &options) {
                 cur.first = minNode.i;
                 cur.second = minNode.j;
             }
-            temp->push_back(set[i2][j2]);
+            temp->push_back(set[i1][j1]);
             temp->reverse();
+            temp->push_back(set[i2][j2]);
             sresult.lppath = temp;
             sresult.hppath = temp;
             sresult.pathlength = set[i2][j2].g;
@@ -121,7 +122,7 @@ void Astar::search(const EnvironmentOptions &options) {
                 checkSquize(cur.first, cur.second, ni, nj, options.allowsqueeze, options.cutcorners)) {
                 if (set[ni][nj].H == inf)
                     set[ni][nj].H = computeHFromCellToCell(cur.first, cur.second, ni, nj, options);
-                double val = set[cur.first][cur.second].F + set[ni][nj].H + 1;
+                double val = set[cur.first][cur.second].F + set[ni][nj].H + computeHFromCellToCell(cur.first,cur.second,ni,nj,options);
                 std::pair<int, int> v(ni, nj);
                 if (find(close.begin(), close.end(), v) != close.end() && val >= set[v.first][v.second].F) {
                     continue;
