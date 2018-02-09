@@ -36,19 +36,17 @@ class ISearch
         //so think of the data structures that needed to be used, about the wrap-up classes (if needed)
         //Start with very simple (and ineffective) structures like list or vector and make it work first
         //and only then begin enhancement!
-        virtual void search(const EnvironmentOptions &options){return;}
-        bool checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners);
+        bool checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners, const Map& map);
         long currTimeInMillSeconds();
         virtual double computeHFromCellToCell(int start_i, int start_j, int fin_i, int fin_j, const EnvironmentOptions &options) {return 0;}
         //std::list<Node> findSuccessors(Node curNode, const Map &map, const EnvironmentOptions &options);
         //void makePrimaryPath(Node curNode);//Makes path using back pointers
         //void makeSecondaryPath();//Makes another type of path(sections or points)
         //Node resetParent(Node current, Node parent, const Map &map, const EnvironmentOptions &options) {return current;}//need for Theta*
-        Map                             map;
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
         double                          hweight;//weight of h-value
         bool                            breakingties;//flag that sets the priority of nodes in addOpen function when their F-values is equal
-        //need to define open, close;
+        std::list<Node>                 open, close;
 };
 #endif
