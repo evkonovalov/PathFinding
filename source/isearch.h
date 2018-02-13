@@ -5,6 +5,7 @@
 #include "environmentoptions.h"
 #include <list>
 #include <vector>
+#include <unordered_map>
 #include <math.h>
 #include <limits>
 #include <chrono>
@@ -40,13 +41,22 @@ class ISearch
         long currTimeInMillSeconds();
         virtual double computeHFromCellToCell(int start_i, int start_j, int fin_i, int fin_j, const EnvironmentOptions &options) {return 0;}
         //std::list<Node> findSuccessors(Node curNode, const Map &map, const EnvironmentOptions &options);
-        //void makePrimaryPath(Node curNode);//Makes path using back pointers
+        void makePrimaryPath(Node curNode);//Makes path using back pointers
         //void makeSecondaryPath();//Makes another type of path(sections or points)
         //Node resetParent(Node current, Node parent, const Map &map, const EnvironmentOptions &options) {return current;}//need for Theta*
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
         double                          hweight;//weight of h-value
         bool                            breakingties;//flag that sets the priority of nodes in addOpen function when their F-values is equal
-        std::list<Node>                 open, close;
+        std::vector<Node*>              open;
+        struct pair_hash {
+            template <class T1, class T2>
+            std::size_t operator () (const std::pair<T1,T2> &p) const {
+                auto h1 = std::hash<T1>{}(p.first);
+                auto h2 = std::hash<T2>{}(p.second);
+                return h1 ^ h2;
+            }
+        };
+        std::unordered_map<std::pair<int,int>, Node*, pair_hash> close;
 };
 #endif
