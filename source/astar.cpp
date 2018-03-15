@@ -1,7 +1,4 @@
 #include "astar.h"
-#include <stack>
-#include <memory>
-#include <set>
 
 Astar::Astar(double HW, bool BT) {
     hweight = HW;
@@ -14,18 +11,18 @@ double Astar::computeHFromCellToCell(int i1, int j1, int i2, int j2, const Envir
     int dy = abs(j1 - j2);
     if (metrictype == CN_SP_MT_DIAG) {
         if (dx > dy) {
-            return sqrt(2) * dy + (dx - dy);
+            return (sqrt(2) * dy + (dx - dy)) * hweight;
         } else {
-            return sqrt(2) * dx + (dy - dx);
+            return (sqrt(2) * dy + (dy - dx)) * hweight;
         }
     } else if (metrictype == CN_SP_MT_MANH) {
-        return dx + dy;
+        return (dx + dy) * hweight;
     } else if (metrictype == CN_SP_MT_EUCL) {
-        return sqrt(dx * dx + dy * dy);
+        return sqrt(dx * dx + dy * dy) * hweight;
     } else if (metrictype == CN_SP_MT_CHEB) {
         if (dx > dy)
-            return dx;
+            return dx * hweight;
         else
-            return dy;
+            return dy * hweight;
     }
 }

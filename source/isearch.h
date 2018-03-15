@@ -6,9 +6,9 @@
 #include <list>
 #include <vector>
 #include <unordered_map>
-#include <math.h>
 #include <limits>
 #include <chrono>
+#include <cmath>
 
 class ISearch
 {
@@ -40,9 +40,7 @@ class ISearch
         bool checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners, const Map& map);
         long currTimeInMillSeconds();
         virtual double computeHFromCellToCell(int start_i, int start_j, int fin_i, int fin_j, const EnvironmentOptions &options) {return 0;}
-        //std::list<Node> findSuccessors(Node curNode, const Map &map, const EnvironmentOptions &options);
-        void makePrimaryPath(Node curNode);//Makes path using back pointers
-        //void makeSecondaryPath();//Makes another type of path(sections or points)
+        void makePathes(Node curNode);
         //Node resetParent(Node current, Node parent, const Map &map, const EnvironmentOptions &options) {return current;}//need for Theta*
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
@@ -58,5 +56,6 @@ class ISearch
             }
         };
         std::unordered_map<std::pair<int,int>, Node*, pair_hash> close;
+        void image(const Map &map);
 };
 #endif

@@ -5,33 +5,126 @@ ISearch::ISearch() {
     breakingties = CN_SP_BT_GMAX;
 }
 
-bool compGmax(const Node* a, const Node* b) {
-    if(a->F == b->F){
+bool compGmax(const Node *a, const Node *b) {
+    if (a->F == b->F) {
         return a->g < b->g;
     } else
         return a->F < b->F;
 }
 
-bool compGmin(const Node* a, const Node* b) {
-    if(a->F == b->F){
+bool compGmin(const Node *a, const Node *b) {
+    if (a->F == b->F) {
         return a->g > b->g;
     } else
         return a->F < b->F;
 }
 
-Node* findPtr(std::vector<Node*>& vec, Node* c){
-    for(auto i: vec){
-        if(*i == *c)
+Node *findPtr(std::vector<Node *> &vec, Node *c) {
+    for (auto i: vec) {
+        if (*i == *c)
             return i;
     }
     return nullptr;
 }
 
-ISearch::~ISearch(void) {}
+void ISearch::image(const Map& map){
+    int w = map.getMapWidth();
+    int h = map.getMapHeight();
+    int** red = (int**)malloc(sizeof(int*)*w);
+    int** green = (int**)malloc(sizeof(int*)*w);
+    int** blue = (int**)malloc(sizeof(int*)*w);
+    for(int i = 0; i < w; i++){
+        red[i] = (int*)malloc(sizeof(int)*h);
+        green[i] = (int*)malloc(sizeof(int)*h);
+        blue[i] = (int*)malloc(sizeof(int)*h);
+    }
+    for (int i = 0; i < map.getMapWidth(); i++) {
+        for (int j = 0; j < map.getMapHeight(); j++) {
+            Node c(i, j);
+            auto t1 = find(lppath.begin(), lppath.end(), c);
+            if (t1 == lppath.end()) {
+                if (!map.CellIsObstacle(c.i, c.j)) {
+                    red[i][j] = 150;
+                    green[i][j] = 150;
+                    blue[i][j] = 150;
+                } else {
+                    red[i][j] = 100;
+                    green[i][j] = 50;
+                    blue[i][j] = 50;
+                }
+            } else {
+                red[i][j] = 10;
+                green[i][j] = 200;
+                blue[i][j] = 10;
+            }
+        }
+    }
+    FILE *f;
+    unsigned char *img = NULL;
+    int filesize = 54 + 3*w*h;  //w is your image width, h is image height, both int
+    int x,y,r,g,b;
+
+    img = (unsigned char *)malloc(3*w*h);
+    memset(img,0,3*w*h);
+
+    for(int i=0; i<w; i++)
+    {
+        for(int j=0; j<h; j++)
+        {
+            x=i; y=(h-1)-j;
+            r = red[i][j];
+            g = green[i][j];
+            b = blue[i][j];
+            if (r > 255) r=255;
+            if (g > 255) g=255;
+            if (b > 255) b=255;
+            img[(x+y*w)*3+2] = (unsigned char)(r);
+            img[(x+y*w)*3+1] = (unsigned char)(g);
+            img[(x+y*w)*3+0] = (unsigned char)(b);
+        }
+    }
+
+    unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
+    unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0};
+    unsigned char bmppad[3] = {0,0,0};
+
+    bmpfileheader[ 2] = (unsigned char)(filesize    );
+    bmpfileheader[ 3] = (unsigned char)(filesize>> 8);
+    bmpfileheader[ 4] = (unsigned char)(filesize>>16);
+    bmpfileheader[ 5] = (unsigned char)(filesize>>24);
+
+    bmpinfoheader[ 4] = (unsigned char)(       w    );
+    bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
+    bmpinfoheader[ 6] = (unsigned char)(       w>>16);
+    bmpinfoheader[ 7] = (unsigned char)(       w>>24);
+    bmpinfoheader[ 8] = (unsigned char)(       h    );
+    bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
+    bmpinfoheader[10] = (unsigned char)(       h>>16);
+    bmpinfoheader[11] = (unsigned char)(       h>>24);
+
+    f = fopen("img.bmp","wb");
+    fwrite(bmpfileheader,1,14,f);
+    fwrite(bmpinfoheader,1,40,f);
+    for(int i=0; i<h; i++)
+    {
+        fwrite(img+(w*(h-i-1)*3),3,w,f);
+        fwrite(bmppad,1,(4-(w*3)%4)%4,f);
+    }
+    for(int i = 0; i < w; i++){
+        free(red[i]);
+        free(green[i]);
+        free(blue[i]);
+    }
+    free(red);
+    free(green);
+    free(blue);
+    free(img);
+    fclose(f);
+}
 
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
     auto comp = &compGmax;
-    if(!breakingties)
+    if (!breakingties)
         comp = &compGmin;
     sresult.time = currTimeInMillSeconds();
     sresult.lppath = nullptr;
@@ -44,7 +137,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     int i2 = map.getMapGoalI();
     int j1 = map.getMapStartJ();
     int j2 = map.getMapGoalJ();
-    Node* cur = new Node(i1,j1);
+    auto *cur = new Node(i1, j1);
     open.push_back(cur);
     std::vector<int> dx = {-1, 0, 1, 0, 1, -1, 1, -1};
     std::vector<int> dy = {0, 1, 0, -1, 1, -1, -1, 1};
@@ -58,31 +151,34 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         auto t = open.begin();
         cur = *t;
         if (cur->i == i2 && cur->j == j2) {
-            makePrimaryPath(*cur);
+            makePathes(*cur);
+            image(map);
             sresult.pathlength = static_cast<float>(sresult.lppath->back().g);
             sresult.pathfound = true;
             sresult.nodescreated = static_cast<unsigned int>(open.size() + close.size());
             sresult.time = (currTimeInMillSeconds() - sresult.time) / 1000;
-            for(auto i: open)
+            for (auto i: open)
                 delete i;
-            for(auto i: close)
+            for (auto i: close)
                 delete i.second;
+            open.clear();
+            close.clear();
             return sresult;
         }
-        std::pair<std::pair<int,int>, Node*> n;
+        std::pair<std::pair<int, int>, Node *> n;
         n.first.first = cur->i;
         n.first.second = cur->j;
         n.second = cur;
         close.insert(n);
         open.erase(t);
-        Node* s = cur;
+        Node *s = cur;
         for (int i = 0; i < dx.size(); i++) {
             int ni = cur->i + dx[i];
             int nj = cur->j + dy[i];
-            Node* ncur = new Node(ni,nj);
+            auto *ncur = new Node(ni, nj);
             if (map.CellOnGrid(ni, nj) && !map.CellIsObstacle(ni, nj) &&
                 checkSquize(cur->i, cur->j, ni, nj, options.allowsqueeze, options.cutcorners, map)) {
-                if (close.find(std::pair<int,int>(ni,nj)) != close.end())
+                if (close.find(std::pair<int, int>(ni, nj)) != close.end())
                     continue;
                 auto tmp = findPtr(open, ncur);
                 if (tmp == nullptr) {
@@ -93,8 +189,8 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
                         ncur->g = cur->g + 1;
                     ncur->F = ncur->g + ncur->H;
                     ncur->parent = s;
-                    auto plc = lower_bound(open.begin(),open.end(),ncur,comp);
-                    open.insert(plc,ncur);
+                    auto plc = lower_bound(open.begin(), open.end(), ncur, comp);
+                    open.insert(plc, ncur);
                 } else {
                     double val;
                     if (dx[i] && dy[i])
@@ -127,7 +223,7 @@ long ISearch::currTimeInMillSeconds() {
 }
 
 
-bool ISearch::checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners, const Map& map) {
+bool ISearch::checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners, const Map &map) {
     int dx = ni - first;
     int dy = nj - second;
     if (dx != 0 && dy != 0) {
@@ -140,43 +236,32 @@ bool ISearch::checkSquize(int first, int second, int ni, int nj, bool allowsquee
 }
 
 
-/*std::list<Node> ISearch::findSuccessors(Node curNode, const Map &map, const EnvironmentOptions &options)
-{
-    std::list<Node> successors;
-    //need to implement
-    return successors;
-}*/
-
-void ISearch::makePrimaryPath(Node curNode)
-{
-    Node* cur = &curNode;
-    auto *lp = new std::list<Node>();
-            auto *hp = new std::list<Node>();
-            int Dx = 2;
-            int Dy = 2;
-            while (!(cur->parent == nullptr)) {
-                int ndx = cur->parent->i - cur->i;
-                int ndy = cur->parent->j - cur->j;
-                if(ndx != Dx || ndy != Dy){
-                    hp->push_back(*cur);
-                }
-                Dx = ndx;
-                Dy = ndy;
-                lppath.push_back(*cur);
-                lp->push_back(*cur);
-                cur = (cur->parent);
-            }
-            hp->push_back(*cur);
-            hp->reverse();
-            lppath.push_back(*cur);
-            lppath.reverse();
-            lp->push_back(*cur);
-            lp->reverse();
-            sresult.lppath = lp;
-            sresult.hppath = hp;
+void ISearch::makePathes(Node curNode) {
+    Node *cur = &curNode;
+    int Dx = 2;
+    int Dy = 2;
+    while (cur->parent != nullptr) {
+        int ndx = cur->parent->i - cur->i;
+        int ndy = cur->parent->j - cur->j;
+        if (ndx != Dx || ndy != Dy) {
+            hppath.push_back(*cur);
+        }
+        Dx = ndx;
+        Dy = ndy;
+        lppath.push_back(*cur);
+        cur = (cur->parent);
+    }
+    hppath.push_back(*cur);
+    hppath.reverse();
+    lppath.push_back(*cur);
+    lppath.reverse();
+    sresult.lppath = &lppath;
+    sresult.hppath = &hppath;
 }
 
-/*void ISearch::makeSecondaryPath()
-{
-    //need to implement
-}*/
+ISearch::~ISearch() {
+    for (auto i: open)
+        delete i;
+    for (auto i: close)
+        delete i.second;
+}

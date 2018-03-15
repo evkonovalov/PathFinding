@@ -8,4 +8,3 @@ MakeFile.Debug
 debug
 release
 *.txt
-*.xml
