@@ -5,28 +5,6 @@ ISearch::ISearch() {
     breakingties = CN_SP_BT_GMAX;
 }
 
-bool compGmax(const Node *a, const Node *b) {
-    if (a->F == b->F) {
-        return a->g < b->g;
-    } else
-        return a->F < b->F;
-}
-
-bool compGmin(const Node *a, const Node *b) {
-    if (a->F == b->F) {
-        return a->g > b->g;
-    } else
-        return a->F < b->F;
-}
-
-Node *findPtr(std::vector<Node *> &vec, Node *c) {
-    for (auto i: vec) {
-        if (*i == *c)
-            return i;
-    }
-    return nullptr;
-}
-
 void ISearch::image(const Map& map){
     int w = map.getMapWidth();
     int h = map.getMapHeight();
@@ -40,7 +18,7 @@ void ISearch::image(const Map& map){
     }
     for (int i = 0; i < map.getMapWidth(); i++) {
         for (int j = 0; j < map.getMapHeight(); j++) {
-            Node c(i, j);
+            Node c(i, j,breakingties);
             auto t1 = find(lppath.begin(), lppath.end(), c);
             if (t1 == lppath.end()) {
                 if (!map.CellIsObstacle(c.i, c.j)) {
@@ -123,9 +101,6 @@ void ISearch::image(const Map& map){
 }
 
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
-    auto comp = &compGmax;
-    if (!breakingties)
-        comp = &compGmin;
     sresult.time = currTimeInMillSeconds();
     sresult.lppath = nullptr;
     sresult.hppath = nullptr;
@@ -133,12 +108,13 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     sresult.numberofsteps = 0;
     sresult.pathfound = false;
     sresult.pathlength = 0;
-    int i1 = map.getMapStartI();
-    int i2 = map.getMapGoalI();
-    int j1 = map.getMapStartJ();
-    int j2 = map.getMapGoalJ();
-    auto *cur = new Node(i1, j1);
-    open.push_back(cur);
+    int startI = map.getMapStartI();
+    int goalI = map.getMapGoalI();
+    int startJ = map.getMapStartJ();
+    int goalJ = map.getMapGoalJ();
+    auto start = Node(startI, startJ, breakingties);
+    double sqrt2 = sqrt(2);
+    open.insert(start);
     std::vector<int> dx = {-1, 0, 1, 0, 1, -1, 1, -1};
     std::vector<int> dy = {0, 1, 0, -1, 1, -1, -1, 1};
     if (!options.allowdiagonal) {
@@ -148,64 +124,55 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
 
     while (!open.empty()) {
         sresult.numberofsteps++;
-        auto t = open.begin();
-        cur = *t;
-        if (cur->i == i2 && cur->j == j2) {
-            makePathes(*cur);
-            image(map);
+        Node cur = *open.begin();
+        if (cur.i == goalI && cur.j == goalJ) {
+            makePathes(cur);
             sresult.pathlength = static_cast<float>(sresult.lppath->back().g);
             sresult.pathfound = true;
             sresult.nodescreated = static_cast<unsigned int>(open.size() + close.size());
             sresult.time = (currTimeInMillSeconds() - sresult.time) / 1000;
-            for (auto i: open)
-                delete i;
-            for (auto i: close)
-                delete i.second;
+            //image(map);
             open.clear();
             close.clear();
             return sresult;
         }
-        std::pair<std::pair<int, int>, Node *> n;
-        n.first.first = cur->i;
-        n.first.second = cur->j;
-        n.second = cur;
-        close.insert(n);
-        open.erase(t);
-        Node *s = cur;
+        std::pair<int, Node> closeNode(cur.i * map.getMapHeight() + cur.j,cur);
+        auto ret = close.insert(closeNode);
+        auto iter = ret.first;
+        Node* parent = &((*iter).second);
+        open.erase(cur);
         for (int i = 0; i < dx.size(); i++) {
-            int ni = cur->i + dx[i];
-            int nj = cur->j + dy[i];
-            auto *ncur = new Node(ni, nj);
+            int ni = cur.i + dx[i];
+            int nj = cur.j + dy[i];
+            auto ncur = Node(ni, nj, breakingties);
             if (map.CellOnGrid(ni, nj) && !map.CellIsObstacle(ni, nj) &&
-                checkSquize(cur->i, cur->j, ni, nj, options.allowsqueeze, options.cutcorners, map)) {
-                if (close.find(std::pair<int, int>(ni, nj)) != close.end())
+                checkSquize(cur.i, cur.j, ni, nj, options.allowsqueeze, options.cutcorners, map)) {
+                if (close.find(ni * map.getMapHeight() + nj) != close.end())
                     continue;
-                auto tmp = findPtr(open, ncur);
-                if (tmp == nullptr) {
-                    ncur->H = computeHFromCellToCell(ni, nj, i2, j2, options);
+                auto tmp = open.find(ncur);
+                if (tmp == open.end()) {
+                    ncur.H = computeHFromCellToCell(ni, nj, goalI, goalJ, options);
                     if (dx[i] && dy[i])
-                        ncur->g = cur->g + sqrt(2);
+                        ncur.g = cur.g + sqrt2;
                     else
-                        ncur->g = cur->g + 1;
-                    ncur->F = ncur->g + ncur->H;
-                    ncur->parent = s;
-                    auto plc = lower_bound(open.begin(), open.end(), ncur, comp);
-                    open.insert(plc, ncur);
+                        ncur.g = cur.g + 1;
+                    ncur.F = ncur.g + ncur.H;
+                    ncur.parent = parent;
+                    open.insert(ncur);
                 } else {
                     double val;
                     if (dx[i] && dy[i])
-                        val = cur->g + (tmp)->H + sqrt(2);
+                        val = cur.g + sqrt2;
                     else
-                        val = cur->g + (tmp)->H + 1;
-                    if (val >= (tmp)->F)
+                        val = cur.g + 1;
+                    if (val >= (tmp)->g)
                         continue;
-                    (tmp)->parent = s;
-                    if (dx[i] && dy[i])
-                        (tmp)->g = cur->g + sqrt(2);
-                    else
-                        (tmp)->g = cur->g + 1;
-                    (tmp)->F = val;
-                    delete ncur;
+                    ncur.H = tmp->H;
+                    ncur.parent = parent;
+                    ncur.g = val;
+                    ncur.F = val + ncur.H;
+                    open.erase(tmp);
+                    open.insert(ncur);
                 }
             }
         }
@@ -260,8 +227,5 @@ void ISearch::makePathes(Node curNode) {
 }
 
 ISearch::~ISearch() {
-    for (auto i: open)
-        delete i;
-    for (auto i: close)
-        delete i.second;
 }
+

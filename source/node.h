@@ -12,17 +12,28 @@
 //compatable with various types of grid pathfinders (Dijkstra, A*, Jump Point Search, Theta* etc.)
 //which means - that's all you need for that project.
 
-struct Node
-{
-    int     i, j; //grid cell coordinates
-    double  F, g, H; //f-, g- and h-values of the search node
-    Node    *parent; //backpointer to the predecessor node (e.g. the node which g-value was used to set the g-velue of the current node)
+struct Node {
+    int i, j; //grid cell coordinates
+    double F, g, H; //f-, g- and h-values of the search node
+    Node *parent; //backpointer to the predecessor node (e.g. the node which g-value was used to set the g-velue of the current node)
+    bool bk;
 
-    bool operator== (const Node &other) const {
+    bool operator==(const Node &other) const {
         return i == other.i && j == other.j;
     }
 
-    Node(int ni, int nj){
+    bool operator<(const Node &other) const {
+        if (F == other.F)
+            if (!bk)
+                return g < other.g;
+            else
+                return g > other.g;
+        else
+            return F < other.F;
+    }
+
+    Node(int ni, int nj, bool breakingties) {
+        bk = breakingties;
         i = ni;
         j = nj;
         F = 0;
@@ -31,4 +42,5 @@ struct Node
         parent = NULL;
     }
 };
+
 #endif

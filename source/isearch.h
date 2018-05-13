@@ -9,6 +9,7 @@
 #include <limits>
 #include <chrono>
 #include <cmath>
+#include <set>
 
 class ISearch
 {
@@ -46,16 +47,8 @@ class ISearch
         std::list<Node>                 lppath, hppath;
         double                          hweight;//weight of h-value
         bool                            breakingties;//flag that sets the priority of nodes in addOpen function when their F-values is equal
-        std::vector<Node*>              open;
-        struct pair_hash {
-            template <class T1, class T2>
-            std::size_t operator () (const std::pair<T1,T2> &p) const {
-                auto h1 = std::hash<T1>{}(p.first);
-                auto h2 = std::hash<T2>{}(p.second);
-                return h1 ^ h2;
-            }
-        };
-        std::unordered_map<std::pair<int,int>, Node*, pair_hash> close;
+        std::set<Node>         open;
+        std::unordered_map<int, Node> close;
         void image(const Map &map);
 };
 #endif
