@@ -121,7 +121,7 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
             sresult.pathfound = true;
             sresult.nodescreated = static_cast<unsigned int>(open.size() + close.size());
             sresult.time = (currTimeInMillSeconds() - sresult.time) / 1000;
-            //image(map);
+            image(map);
             open.clear();
             close.clear();
             return sresult;

@@ -42,7 +42,7 @@ class ISearch
         long currTimeInMillSeconds();
         virtual double computeHFromCellToCell(int start_i, int start_j, int fin_i, int fin_j, const EnvironmentOptions &options) {return 0;}
         void makePathes(Node curNode);
-        Node resetParent(Node current, Node* parent, const Map &map, const EnvironmentOptions &options); //need for Theta*
+        virtual Node resetParent(Node current, Node* parent, const Map &map, const EnvironmentOptions &options); //need for Theta*
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
         double                          hweight;//weight of h-value
