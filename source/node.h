@@ -12,6 +12,8 @@
 //compatable with various types of grid pathfinders (Dijkstra, A*, Jump Point Search, Theta* etc.)
 //which means - that's all you need for that project.
 
+#include <stdlib.h>
+
 struct Node {
     int i, j; //grid cell coordinates
     double F, g, H; //f-, g- and h-values of the search node
@@ -22,14 +24,25 @@ struct Node {
         return i == other.i && j == other.j;
     }
 
+    bool operator!=(const Node &other) const {
+        return i != other.i || j != other.j;
+    }
+
     bool operator<(const Node &other) const {
-        if (F == other.F)
-            if (!bk)
-                return g < other.g;
-            else
-                return g > other.g;
-        else
-            return F < other.F;
+        if (F == other.F) {
+            if (g != other.g) {
+                if (!bk)
+                    return g < other.g;
+                else
+                    return g > other.g;
+            } else {
+                if(other.i != i)
+                    return i < other.i;
+                else if(other.j != j)
+                    return j < other.j;
+            }
+        }
+        return F < other.F;
     }
 
     Node(int ni, int nj, bool breakingties) {
