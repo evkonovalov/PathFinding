@@ -13,6 +13,7 @@
 //which means - that's all you need for that project.
 
 #include <stdlib.h>
+#include <cmath>
 
 struct Node {
     int i, j; //grid cell coordinates
@@ -29,7 +30,7 @@ struct Node {
     }
 
     bool operator<(const Node &other) const {
-        if (F == other.F) {
+        if (fabs(F - other.F) < 0.1) {
             if (g != other.g) {
                 if (!bk)
                     return g < other.g;

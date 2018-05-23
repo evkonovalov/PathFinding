@@ -13,7 +13,7 @@ double Astar::computeHFromCellToCell(int i1, int j1, int i2, int j2, const Envir
         if (dx > dy) {
             return (sqrt(2) * dy + (dx - dy)) * hweight;
         } else {
-            return (sqrt(2) * dy + (dy - dx)) * hweight;
+            return (sqrt(2) * dx + (dy - dx)) * hweight;
         }
     } else if (metrictype == CN_SP_MT_MANH) {
         return (dx + dy) * hweight;

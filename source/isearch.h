@@ -38,10 +38,10 @@ class ISearch
         //so think of the data structures that needed to be used, about the wrap-up classes (if needed)
         //Start with very simple (and ineffective) structures like list or vector and make it work first
         //and only then begin enhancement!
-        bool checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners, const Map& map);
+        bool checkSquize(int first, int second, int ni, int nj, const Map& map);
         long currTimeInMillSeconds();
         virtual double computeHFromCellToCell(int start_i, int start_j, int fin_i, int fin_j, const EnvironmentOptions &options) {return 0;}
-        void makePathes(Node curNode);
+        virtual void makePathes(Node curNode, const Map &map);
         virtual Node resetParent(Node current, Node* parent, const Map &map, const EnvironmentOptions &options); //need for Theta*
         SearchResult                    sresult;
         std::list<Node>                 lppath, hppath;
@@ -49,6 +49,8 @@ class ISearch
         bool                            breakingties;//flag that sets the priority of nodes in addOpen function when their F-values is equal
         std::set<Node>         open;
         std::unordered_map<int, Node> close;
+        bool cutcorners;
+        bool allowsqueeze;
         void image(const Map &map);
         void neighbors(Node cur,  std::set<Node> &suc, const Map &map, const EnvironmentOptions &options);
 };

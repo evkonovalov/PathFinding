@@ -31,9 +31,16 @@ void ISearch::image(const Map &map) {
                     blue[i][j] = 50;
                 }
             } else {
-                red[i][j] = 10;
-                green[i][j] = 200;
-                blue[i][j] = 10;
+                t1 = find(hppath.begin(),hppath.end(),c);
+                if(t1 == hppath.end()) {
+                    red[i][j] = 10;
+                    green[i][j] = 200;
+                    blue[i][j] = 10;
+                } else {
+                    red[i][j] = 200;
+                    green[i][j] = 200;
+                    blue[i][j] = 10;
+                }
             }
         }
     }
@@ -99,6 +106,8 @@ void ISearch::image(const Map &map) {
 }
 
 SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
+    allowsqueeze = options.allowsqueeze;
+    cutcorners = options.cutcorners;
     sresult.time = currTimeInMillSeconds();
     sresult.lppath = nullptr;
     sresult.hppath = nullptr;
@@ -116,12 +125,12 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
         sresult.numberofsteps++;
         Node cur = *open.begin();
         if (cur.i == goalI && cur.j == goalJ) {
-            makePathes(cur);
-            sresult.pathlength = static_cast<float>(sresult.lppath->back().g);
+            makePathes(cur, map);
+            sresult.pathlength = static_cast<float>(sresult.hppath->back().g);
             sresult.pathfound = true;
             sresult.nodescreated = static_cast<unsigned int>(open.size() + close.size());
             sresult.time = (currTimeInMillSeconds() - sresult.time) / 1000;
-            image(map);
+            //image(map);
             open.clear();
             close.clear();
             return sresult;
@@ -150,21 +159,21 @@ long ISearch::currTimeInMillSeconds() {
 }
 
 
-bool ISearch::checkSquize(int first, int second, int ni, int nj, bool allowsqueeze, bool cutcorners, const Map &map) {
+bool ISearch::checkSquize(int first, int second, int ni, int nj, const Map &map) {
     int dx = ni - first;
     int dy = nj - second;
     if (dx != 0 && dy != 0) {
         if (!cutcorners && (map.CellIsObstacle(first, nj) || map.CellIsObstacle(ni, second)))
             return false;
-        else if (!allowsqueeze && (map.CellIsObstacle(first, nj) && map.CellIsObstacle(ni, second)))
+        if (!allowsqueeze && (map.CellIsObstacle(first, nj) && map.CellIsObstacle(ni, second)))
             return false;
     }
     return true;
 }
 
 void ISearch::neighbors(Node cur, std::set<Node> &suc, const Map &map, const EnvironmentOptions &options) {
-    std::vector<int> dx = {-1, 0, 1, 0, 1, -1, 1, -1};
-    std::vector<int> dy = {0, 1, 0, -1, 1, -1, -1, 1};
+    std::vector<int> dx = {1, -1, 1, -1, -1, 0, 1, 0};
+    std::vector<int> dy = {1, -1, -1, 1, 0, 1, 0, -1};
     if (!options.allowdiagonal) {
         dx = {1, -1, 0, 0};
         dy = {0, 0, -1, 1};
@@ -173,7 +182,7 @@ void ISearch::neighbors(Node cur, std::set<Node> &suc, const Map &map, const Env
         int ni = cur.i + dx[i];
         int nj = cur.j + dy[i];
         if (map.CellOnGrid(ni, nj) && !map.CellIsObstacle(ni, nj) &&
-            checkSquize(cur.i, cur.j, ni, nj, options.allowsqueeze, options.cutcorners, map)) {
+            checkSquize(cur.i, cur.j, ni, nj, map)) {
             auto node = Node(cur.i + dx[i], cur.j + dy[i], breakingties);
             suc.insert(node);
         }
@@ -187,7 +196,7 @@ Node ISearch::resetParent(Node cur, Node* parent, const Map &map, const Environm
         return cur;
     auto tmp = open.find(cur);
     if (tmp == open.end()) {
-        cur.H = computeHFromCellToCell(cur.i, cur.i, map.getMapGoalI(), map.getMapGoalJ(), options);
+        cur.H = computeHFromCellToCell(cur.i, cur.j, map.getMapGoalI(), map.getMapGoalJ(), options);
         if (dx && dy)
             cur.g = (*parent).g + sqrt(2);
         else
@@ -214,7 +223,7 @@ Node ISearch::resetParent(Node cur, Node* parent, const Map &map, const Environm
     }
 }
 
-void ISearch::makePathes(Node curNode) {
+void ISearch::makePathes(Node curNode, const Map &map) {
     Node *cur = &curNode;
     int Dx = 2;
     int Dy = 2;
