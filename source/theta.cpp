@@ -1,10 +1,9 @@
 #include "theta.h"
-Theta::~Theta()
-{
+
+Theta::~Theta() {
 }
 
-bool Theta::lineOfSight(int i1, int j1, int i2, int j2, const Map &map, std::list<Node>* passed)
-{
+bool Theta::lineOfSight(int i1, int j1, int i2, int j2, const Map &map, std::list<Node> *passed) {
     int lasti = -1;
     int lastj = -1;
     int dx = i2 - i1;
@@ -12,27 +11,27 @@ bool Theta::lineOfSight(int i1, int j1, int i2, int j2, const Map &map, std::lis
     int error = 0;
     int diry = 1;
     int dirx = 1;
-    if(dy < 0){
+    if (dy < 0) {
         dy = -dy;
         diry = -1;
     }
-    if(dx < 0){
+    if (dx < 0) {
         dx = -dx;
         dirx = -1;
     }
-    if(dx >= dy) {
+    if (dx >= dy) {
         int de = dy;
         int j = j1;
         lastj = j1;
-        for(int i = i1; i != i2; i+= dirx) {
+        for (int i = i1; i != i2; i += dirx) {
             if (!map.CellOnGrid(i, j) || map.CellIsObstacle(i, j))
                 return false;
-            if(lasti != -1){
-                if(!checkSquize(lasti,lastj,i,j,map))
+            if (lasti != -1) {
+                if (!checkSquize(lasti, lastj, i, j, map))
                     return false;
             }
-            if(passed != nullptr){
-                passed->push_back(Node(i,j,true));
+            if (passed != nullptr) {
+                passed->push_back(Node(i, j, true));
             }
             error = error + de;
             if (2 * error >= dx) {
@@ -47,15 +46,15 @@ bool Theta::lineOfSight(int i1, int j1, int i2, int j2, const Map &map, std::lis
         int de = dx;
         lasti = i1;
         int i = i1;
-        for(int j = j1; j != j2; j+= diry) {
+        for (int j = j1; j != j2; j += diry) {
             if (!map.CellOnGrid(i, j) || map.CellIsObstacle(i, j))
                 return false;
-            if(lastj != -1){
-                if(!checkSquize(lasti,lastj,i,j,map))
+            if (lastj != -1) {
+                if (!checkSquize(lasti, lastj, i, j, map))
                     return false;
             }
-            if(passed != nullptr){
-                passed->push_back(Node(i,j,true));
+            if (passed != nullptr) {
+                passed->push_back(Node(i, j, true));
             }
             error = error + de;
             if (2 * error >= dy) {
@@ -70,12 +69,11 @@ bool Theta::lineOfSight(int i1, int j1, int i2, int j2, const Map &map, std::lis
 }
 
 
-Node Theta::resetParent(Node cur, Node* parent, const Map &map, const EnvironmentOptions &options )
-{
+Node Theta::resetParent(Node cur, Node *parent, const Map &map, const EnvironmentOptions &options) {
     if (close.find(cur.i * map.getMapHeight() + cur.j) != close.end())
         return cur;
-    if(parent->parent != nullptr && lineOfSight(cur.i,cur.j,parent->parent->i,parent->parent->j,map,
-                                                nullptr)) {
+    if (parent->parent != nullptr && lineOfSight(cur.i, cur.j, parent->parent->i, parent->parent->j, map,
+                                                 nullptr)) {
         auto tmp = open.find(cur);
         double dx = (cur.i - parent->parent->i);
         double dy = (cur.j - parent->parent->j);
@@ -134,8 +132,8 @@ void Theta::makePathes(Node curNode, const Map &map) {
     Node *cur = &curNode;
     while (cur->parent != nullptr) {
         std::list<Node> passed;
-        lineOfSight(cur->i,cur->j,cur->parent->i, cur->parent->j,map,&passed);
-        lppath.insert(lppath.end(),passed.begin(),passed.end());
+        lineOfSight(cur->i, cur->j, cur->parent->i, cur->parent->j, map, &passed);
+        lppath.insert(lppath.end(), passed.begin(), passed.end());
         hppath.push_back(*cur);
         cur = (cur->parent);
     }

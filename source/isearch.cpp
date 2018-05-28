@@ -31,8 +31,8 @@ void ISearch::image(const Map &map) {
                     blue[i][j] = 50;
                 }
             } else {
-                t1 = find(hppath.begin(),hppath.end(),c);
-                if(t1 == hppath.end()) {
+                t1 = find(hppath.begin(), hppath.end(), c);
+                if (t1 == hppath.end()) {
                     red[i][j] = 10;
                     green[i][j] = 200;
                     blue[i][j] = 10;
@@ -46,7 +46,7 @@ void ISearch::image(const Map &map) {
     }
     FILE *f;
     unsigned char *img = NULL;
-    int filesize = 54 + 3 * w * h;  //w is your image width, h is image height, both int
+    int filesize = 54 + 3 * w * h;
     int x, y, r, g, b;
 
     img = (unsigned char *) malloc(3 * w * h);
@@ -105,7 +105,7 @@ void ISearch::image(const Map &map) {
     fclose(f);
 }
 
-SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options) {
+SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options, bool visual) {
     allowsqueeze = options.allowsqueeze;
     cutcorners = options.cutcorners;
     sresult.time = currTimeInMillSeconds();
@@ -115,34 +115,31 @@ SearchResult ISearch::startSearch(ILogger *Logger, const Map &map, const Environ
     sresult.numberofsteps = 0;
     sresult.pathfound = false;
     sresult.pathlength = 0;
-    int startI = map.getMapStartI();
-    int goalI = map.getMapGoalI();
-    int startJ = map.getMapStartJ();
-    int goalJ = map.getMapGoalJ();
-    auto start = Node(startI, startJ, breakingties);
+    auto start = Node(map.getMapStartI(), map.getMapStartJ(), breakingties);
     open.insert(start);
     while (!open.empty()) {
         sresult.numberofsteps++;
-        Node cur = *open.begin();
-        if (cur.i == goalI && cur.j == goalJ) {
-            makePathes(cur, map);
-            sresult.pathlength = static_cast<float>(sresult.hppath->back().g);
+        Node currentNode = *open.begin();
+        if (currentNode.i == map.getMapGoalI() && currentNode.j == map.getMapGoalJ()) {
+            makePathes(currentNode, map);
+            sresult.pathlength = static_cast<float>(currentNode.g);
             sresult.pathfound = true;
             sresult.nodescreated = static_cast<unsigned int>(open.size() + close.size());
             sresult.time = (currTimeInMillSeconds() - sresult.time) / 1000;
-            //image(map);
+            if (visual)
+                image(map);
             open.clear();
             close.clear();
             return sresult;
         }
-        std::pair<int, Node> closeNode(cur.i * map.getMapHeight() + cur.j, cur);
+        std::pair<int, Node> closeNode(currentNode.i * map.getMapHeight() + currentNode.j, currentNode);
         auto ret = close.insert(closeNode);
         auto iter = ret.first;
         Node *parent = &((*iter).second);
         open.erase(open.begin());
-        std::set<Node> suc;
-        neighbors(*parent, suc, map, options);
-        for (auto i: suc) {
+        std::set<Node> successors;
+        findSuccessors(*parent, successors, map, options);
+        for (auto i: successors) {
             resetParent(i, parent, map, options);
         }
     }
@@ -159,19 +156,23 @@ long ISearch::currTimeInMillSeconds() {
 }
 
 
-bool ISearch::checkSquize(int first, int second, int ni, int nj, const Map &map) {
-    int dx = ni - first;
-    int dy = nj - second;
+bool ISearch::checkSquize(int i1, int j1, int i2, int j2, const Map &map) {
+    int dx = i2 - i1;
+    int dy = j2 - j1;
     if (dx != 0 && dy != 0) {
-        if (!cutcorners && (map.CellIsObstacle(first, nj) || map.CellIsObstacle(ni, second)))
+        if (!cutcorners && (map.CellIsObstacle(i1, j2) || map.CellIsObstacle(i2, j1)))
             return false;
-        if (!allowsqueeze && (map.CellIsObstacle(first, nj) && map.CellIsObstacle(ni, second)))
+        if (!allowsqueeze && (map.CellIsObstacle(i1, j2) && map.CellIsObstacle(i2, j1)))
             return false;
     }
     return true;
 }
 
-void ISearch::neighbors(Node cur, std::set<Node> &suc, const Map &map, const EnvironmentOptions &options) {
+void ISearch::findSuccessors(Node cur, std::set<Node> &suc, const Map &map, const EnvironmentOptions &options) {
+    neighbours(cur, suc, map, options);
+}
+
+void ISearch::neighbours(Node cur, std::set<Node> &suc, const Map &map, const EnvironmentOptions &options) {
     std::vector<int> dx = {1, -1, 1, -1, -1, 0, 1, 0};
     std::vector<int> dy = {1, -1, -1, 1, 0, 1, 0, -1};
     if (!options.allowdiagonal) {
@@ -189,7 +190,7 @@ void ISearch::neighbors(Node cur, std::set<Node> &suc, const Map &map, const Env
     }
 }
 
-Node ISearch::resetParent(Node cur, Node* parent, const Map &map, const EnvironmentOptions &options) {
+Node ISearch::resetParent(Node cur, Node *parent, const Map &map, const EnvironmentOptions &options) {
     int dx = (*parent).i - cur.i;
     int dy = (*parent).j - cur.j;
     if (close.find(cur.i * map.getMapHeight() + cur.j) != close.end())
@@ -225,16 +226,16 @@ Node ISearch::resetParent(Node cur, Node* parent, const Map &map, const Environm
 
 void ISearch::makePathes(Node curNode, const Map &map) {
     Node *cur = &curNode;
-    int Dx = 2;
-    int Dy = 2;
+    int dx = 2;
+    int dy = 2;
     while (cur->parent != nullptr) {
-        int ndx = cur->parent->i - cur->i;
-        int ndy = cur->parent->j - cur->j;
-        if (ndx != Dx || ndy != Dy) {
+        int newdx = cur->parent->i - cur->i;
+        int newdy = cur->parent->j - cur->j;
+        if (newdx != dx || newdy != dy) {
             hppath.push_back(*cur);
         }
-        Dx = ndx;
-        Dy = ndy;
+        dx = newdx;
+        dy = newdy;
         lppath.push_back(*cur);
         cur = (cur->parent);
     }

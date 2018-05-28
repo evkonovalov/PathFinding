@@ -1,42 +1,44 @@
 #include "mission.h"
 
-int main(int argc, char* argv[])
-{
-    if(argc < 2) {
-        std::cout<<"Error! Pathfinding task file (XML) is not specified!"<<std::endl;
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        std::cout << "Error! Pathfinding task file (XML) is not specified!" << std::endl;
         return 0;
+    }
+    bool vis = false;
+    if (argc == 3) {
+        vis = atoi(argv[2]);
     }
 
     Mission mission(argv[1]);
 
-    std::cout<<argv[1]<<std::endl;
-    std::cout<<"Parsing the map from XML:"<<std::endl;
+    std::cout << argv[1] << std::endl;
+    std::cout << "Parsing the map from XML:" << std::endl;
 
-    if(!mission.getMap()) {
-        std::cout<<"Incorrect map! Program halted!"<<std::endl;
-    }
-    else {
-        std::cout<<"Map OK!"<<std::endl<<"Parsing configurations (algorithm, log) from XML:"<<std::endl;
-        if(!mission.getConfig())
-            std::cout<<"Incorrect configurations! Program halted!"<<std::endl;
+    if (!mission.getMap()) {
+        std::cout << "Incorrect map! Program halted!" << std::endl;
+    } else {
+        std::cout << "Map OK!" << std::endl << "Parsing configurations (algorithm, log) from XML:" << std::endl;
+        if (!mission.getConfig())
+            std::cout << "Incorrect configurations! Program halted!" << std::endl;
         else {
-            std::cout<<"Configurations OK!"<<std::endl<<"Creating log channel:"<<std::endl;
+            std::cout << "Configurations OK!" << std::endl << "Creating log channel:" << std::endl;
 
-            if(!mission.createLog())
-                std::cout<<"Log chanel has not been created! Program halted!"<<std::endl;
+            if (!mission.createLog())
+                std::cout << "Log chanel has not been created! Program halted!" << std::endl;
             else {
-                std::cout<<"Log OK!"<<std::endl<<"Start searching the path:"<<std::endl;
+                std::cout << "Log OK!" << std::endl << "Start searching the path:" << std::endl;
 
                 mission.createEnvironmentOptions();
                 mission.createSearch();
-                mission.startSearch();
+                mission.startSearch(vis);
 
-                std::cout<<"Search is finished!"<<std::endl;
+                std::cout << "Search is finished!" << std::endl;
 
                 mission.printSearchResultsToConsole();
                 mission.saveSearchResultsToLog();
 
-                std::cout<<"Results are saved (if chosen) via created log channel."<<std::endl;
+                std::cout << "Results are saved (if chosen) via created log channel." << std::endl;
             }
         }
     }
