@@ -5,7 +5,7 @@ Astar::Astar(double HW, bool BT) {
     breakingties = BT;
 }
 
-double Astar::computeHFromCellToCell(int i1, int j1, int i2, int j2, const EnvironmentOptions &options) {
+double Astar::computeHFromCellToCell(double i1, double j1, double i2, double j2, const EnvironmentOptions &options) {
     int metrictype = options.metrictype;
     int dx = abs(i1 - i2);
     int dy = abs(j1 - j2);

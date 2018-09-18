@@ -5,7 +5,7 @@
 #include <cmath>
 
 struct Node {
-    int i, j;
+    double i, j;
     double F, g, H;
     Node *parent;
     bool bk;

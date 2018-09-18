@@ -4,6 +4,7 @@
 #include "theta.h"
 #include "xmllogger.h"
 #include "gl_const.h"
+#include "anya.h"
 #include <iostream>
 
 Mission::Mission() {
@@ -59,6 +60,8 @@ void Mission::createSearch() {
         search = new JP_Search(config.SearchParams[CN_SP_HW], config.SearchParams[CN_SP_BT]);
     else if (config.SearchParams[CN_SP_ST] == CN_SP_ST_TH)
         search = new Theta(config.SearchParams[CN_SP_HW], config.SearchParams[CN_SP_BT]);
+    else if (config.SearchParams[CN_SP_ST] == CN_SP_ST_AN)
+        search = new Anya(config.SearchParams[CN_SP_HW], config.SearchParams[CN_SP_BT]);
 }
 
 void Mission::startSearch(bool visual) {
@@ -101,6 +104,8 @@ const char *Mission::getAlgorithmName() {
         return CNS_SP_ST_JP_SEARCH;
     else if (config.SearchParams[CN_SP_ST] == CN_SP_ST_TH)
         return CNS_SP_ST_TH;
+    else if (config.SearchParams[CN_SP_ST] == CN_SP_ST_AN)
+        return CNS_SP_ST_AN;
     else
         return "";
 }

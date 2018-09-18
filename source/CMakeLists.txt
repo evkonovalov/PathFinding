@@ -19,6 +19,8 @@ set(SOURCE_FILES
         theta.cpp
         xmllogger.h
         astar.h
+        anya.cpp
+        anya.h
         config.cpp
         dijkstra.h
         gl_const.h

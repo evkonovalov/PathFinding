@@ -18,21 +18,21 @@ class ISearch {
 
         ~ISearch(void);
 
-        SearchResult startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options, bool visual);
+        virtual SearchResult startSearch(ILogger *Logger, const Map &map, const EnvironmentOptions &options, bool visual);
 
     protected:
         bool checkSquize(int i1, int j1, int i2, int j2, const Map &map);
 
         long currTimeInMillSeconds();
 
-        virtual double computeHFromCellToCell(int start_i, int start_j, int fin_i, int fin_j,
+        virtual double computeHFromCellToCell(double start_i, double start_j, double fin_i, double fin_j,
                                               const EnvironmentOptions &options) { return 0; }
 
         virtual void makePathes(Node curNode, const Map &map);
 
         virtual Node resetParent(Node current, Node *parent, const Map &map, const EnvironmentOptions &options);
 
-        void image(const Map &map);
+        virtual void image(const Map &map);
 
         virtual void findSuccessors(Node cur, std::set<Node> &suc, const Map &map, const EnvironmentOptions &options);
 
